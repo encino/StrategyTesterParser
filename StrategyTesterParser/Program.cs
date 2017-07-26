@@ -14,10 +14,10 @@ namespace StrategyTesterParser
         static void Main(string[] args)
         {
             CsvRow row = new CsvRow();
-            //string[] fileEntries = Directory.GetFiles(@"C:\Users\encino\AppData\Roaming\MetaQuotes\Terminal\3212703ED955F10C7534BE8497B221F4\opt","*.htm");
-            string[] fileEntries = Directory.GetFiles(@"C:\Users\bholland\Documents\finch\opts", "*.htm");
+            string folder = @"C:\Users\bholland\Documents\finch\opts-lots";
+            string[] fileEntries = Directory.GetFiles(folder, "*.htm");
 
-            using (CsvFileWriter writer = new CsvFileWriter("StrategyTesterParser.csv"))
+            using (CsvFileWriter writer = new CsvFileWriter(Path.Combine(folder, "StrategyTesterParser-lotsNZD.csv")))
             {
                 foreach (string fileName in fileEntries)
                 {
@@ -28,37 +28,53 @@ namespace StrategyTesterParser
                     row = new CsvRow();
                     HtmlDocument doc = new HtmlDocument();
                     doc.Load(fileName);
-                    var tablenodes = doc.DocumentNode.Descendants("table").Skip(1).Take(1);
 
-                    if (tablenodes != null)
+                    if (doc.DocumentNode.Descendants("div").First().Descendants().Skip(1).First().InnerText.Contains("Optimization"))
                     {
+                        var tablenodes = doc.DocumentNode.Descendants("table").Skip(1).Take(1);
 
-                        int j = 0;
-                        row = new CsvRow();
-                        foreach (HtmlAgilityPack.HtmlNode node in tablenodes)
+                        if (tablenodes != null)
                         {
-                            foreach (HtmlAgilityPack.HtmlNode tr in node.Descendants())
+                            row = new CsvRow();
+                            foreach (HtmlAgilityPack.HtmlNode node in tablenodes)
                             {
-                                if (i > 6)
+                                foreach (HtmlAgilityPack.HtmlNode tr in node.Descendants())
                                 {
-                                    break;
-                                } 
-                                IEnumerable<HtmlAgilityPack.HtmlNode> td = tr.Descendants();
-                                if (td.Count() > 4)
-                                {
-                                    string inputs = td.First().Attributes["title"] != null ? td.First().Attributes["title"].Value : string.Empty;
-                                    row.Add(td.Skip(2).Take(1).First().InnerText);
-                                    row.Add(td.Skip(4).Take(1).First().InnerText);
-                                    row.Add(td.Skip(10).Take(1).First().InnerText);
-                                    row.Add(inputs);
-                                    writer.WriteRow(row);
-                                    row = new CsvRow();
-                                    i++;
+                                    if (i > 6)
+                                    {
+                                        break;
+                                    }
+                                    IEnumerable<HtmlAgilityPack.HtmlNode> td = tr.Descendants();
+                                    if (td.Count() > 4)
+                                    {
+                                        string inputs = td.First().Attributes["title"] != null ? td.First().Attributes["title"].Value : string.Empty;
+                                        row.Add(td.Skip(2).Take(1).First().InnerText);
+                                        row.Add(td.Skip(4).Take(1).First().InnerText);
+                                        row.Add(td.Skip(10).Take(1).First().InnerText);
+                                        row.Add(inputs);
+                                        writer.WriteRow(row);
+                                        row = new CsvRow();
+                                        i++;
+                                    }
                                 }
+
                             }
 
                         }
-
+                    }
+                    else
+                    {
+                        row = new CsvRow();
+                        HtmlAgilityPack.HtmlNode profit = doc.DocumentNode.Descendants("table").First().Descendants("td").Where(x => x.InnerText == "Total net profit").First().NextSibling;
+                        HtmlAgilityPack.HtmlNode dd = doc.DocumentNode.Descendants("table").First().Descendants("td").Where(x => x.InnerText == "Maximal drawdown").First().NextSibling;
+                        HtmlAgilityPack.HtmlNode trades = doc.DocumentNode.Descendants("table").First().Descendants("td").Where(x => x.InnerText == "Total trades").First().NextSibling;
+                        HtmlAgilityPack.HtmlNode parameters = doc.DocumentNode.Descendants("table").First().Descendants("td").Where(x => x.InnerText == "Parameters").First().NextSibling;
+                        row.Add(profit.InnerText);
+                        row.Add(dd.InnerText);
+                        row.Add(trades.InnerText);
+                        row.Add(parameters.InnerText);
+                        writer.WriteRow(row);
+                        row = new CsvRow();
                     }
                 }
             }
