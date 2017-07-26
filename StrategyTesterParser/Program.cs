@@ -14,12 +14,15 @@ namespace StrategyTesterParser
         static void Main(string[] args)
         {
             CsvRow row = new CsvRow();
-            string[] fileEntries = Directory.GetFiles(@"C:\Users\encino\AppData\Roaming\MetaQuotes\Terminal\3212703ED955F10C7534BE8497B221F4\opt","*.htm");
-            foreach (string fileName in fileEntries)
+            //string[] fileEntries = Directory.GetFiles(@"C:\Users\encino\AppData\Roaming\MetaQuotes\Terminal\3212703ED955F10C7534BE8497B221F4\opt","*.htm");
+            string[] fileEntries = Directory.GetFiles(@"C:\Users\bholland\Documents\finch\opts", "*.htm");
+
+            using (CsvFileWriter writer = new CsvFileWriter("StrategyTesterParser.csv"))
             {
-                int i = 0;
-                using (CsvFileWriter writer = new CsvFileWriter("StrategyTesterParser.csv"))
+                foreach (string fileName in fileEntries)
                 {
+                    int i = 0;
+
                     row.Add(Path.GetFileName(fileName));
                     writer.WriteRow(row);
                     row = new CsvRow();
@@ -58,11 +61,7 @@ namespace StrategyTesterParser
 
                     }
                 }
-
-                //Label1.Text += "<img src=\"" + Path.GetFileName(fileName) + "\" /><br />";
             }
-
-            //WriteTest();
 
         }
 
