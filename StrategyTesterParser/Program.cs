@@ -14,7 +14,8 @@ namespace StrategyTesterParser
         static void Main(string[] args)
         {
 
-            //ReplaceIniFileNames("EURAUD");
+            //ReplaceIniFileNames("EURAUD", @"C:\Users\Home\AppData\Roaming\MetaQuotes\Terminal\3212703ED955F10C7534BE8497B221F4\template");
+            //CreateBatchFile(@"C:\Users\Home\AppData\Roaming\MetaQuotes\Terminal\3212703ED955F10C7534BE8497B221F4\template");
 
             CsvRow row = new CsvRow();
             string folder = @"C:\Users\Home\AppData\Roaming\MetaQuotes\Terminal\3212703ED955F10C7534BE8497B221F4\Opt\AUDNZD";
@@ -84,18 +85,44 @@ namespace StrategyTesterParser
 
         }
 
-        private static void ReplaceIniFileNames(string newPair)
+        private static void ReplaceIniFileNames(string newPair, string folder)
         {
-            string folder;
-            string[] fileEntries;
-            folder = @"C:\Users\Home\AppData\Roaming\MetaQuotes\Terminal\3212703ED955F10C7534BE8497B221F4\template";
-            fileEntries = Directory.GetFiles(folder, "*.txt");
+
+            string[] fileEntries = Directory.GetFiles(folder, "*.txt");
+
             foreach (string fileNameFull in fileEntries)
             {
                 string fileName = Path.GetFileName(fileNameFull);
                 string pairName = fileName.Substring(0, fileName.IndexOf("-"));
                 File.Move(Path.Combine(folder, fileName), Path.Combine(folder, fileName.Replace(pairName, newPair)));
 
+            }
+        }
+
+        private static void CreateBatchFile(string folder)
+        {
+            string fileName = "opt.bat";
+
+            try
+            {
+                if (File.Exists(Path.Combine(folder, fileName)))
+                {
+                    File.Delete(Path.Combine(folder, fileName));
+                }
+
+                using (StreamWriter sw = File.CreateText(Path.Combine(folder, fileName)))
+                {
+                    string[] fileEntries = Directory.GetFiles(folder, "*.txt");
+                    foreach (string fileNameFull in fileEntries)
+                    {
+                        string fileNameShort = Path.GetFileName(fileNameFull);
+                        sw.WriteLine("START /wait terminal.exe {0}", fileNameShort);
+                    }
+                }
+            }
+            catch (Exception Ex)
+            {
+                Console.WriteLine(Ex.ToString());
             }
         }
 
