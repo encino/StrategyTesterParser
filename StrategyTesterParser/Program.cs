@@ -13,11 +13,14 @@ namespace StrategyTesterParser
     {
         static void Main(string[] args)
         {
+
+            //ReplaceIniFileNames("EURAUD");
+
             CsvRow row = new CsvRow();
-            string folder = @"C:\Users\bholland\Documents\finch\opts-lots";
+            string folder = @"C:\Users\Home\AppData\Roaming\MetaQuotes\Terminal\3212703ED955F10C7534BE8497B221F4\Opt\AUDNZD";
             string[] fileEntries = Directory.GetFiles(folder, "*.htm");
 
-            using (CsvFileWriter writer = new CsvFileWriter(Path.Combine(folder, "StrategyTesterParser-lotsNZD.csv")))
+            using (CsvFileWriter writer = new CsvFileWriter(Path.Combine(folder, "StrategyTesterParser-AUDNZD.csv")))
             {
                 foreach (string fileName in fileEntries)
                 {
@@ -40,7 +43,7 @@ namespace StrategyTesterParser
                             {
                                 foreach (HtmlAgilityPack.HtmlNode tr in node.Descendants())
                                 {
-                                    if (i > 6)
+                                    if (i > 10)
                                     {
                                         break;
                                     }
@@ -79,6 +82,21 @@ namespace StrategyTesterParser
                 }
             }
 
+        }
+
+        private static void ReplaceIniFileNames(string newPair)
+        {
+            string folder;
+            string[] fileEntries;
+            folder = @"C:\Users\Home\AppData\Roaming\MetaQuotes\Terminal\3212703ED955F10C7534BE8497B221F4\template";
+            fileEntries = Directory.GetFiles(folder, "*.txt");
+            foreach (string fileNameFull in fileEntries)
+            {
+                string fileName = Path.GetFileName(fileNameFull);
+                string pairName = fileName.Substring(0, fileName.IndexOf("-"));
+                File.Move(Path.Combine(folder, fileName), Path.Combine(folder, fileName.Replace(pairName, newPair)));
+
+            }
         }
 
         static void WriteTest()
